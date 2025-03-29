@@ -227,7 +227,7 @@ class CompanyInfoExtractor:
         return results
 
 # Initialize the extractor with your provided Gemini API key.
-EXTRACTOR = CompanyInfoExtractor("AIzaSyC4um2lmjA28OJm39rL5Y7wIEUDf4MBpw4")
+EXTRACTOR = CompanyInfoExtractor("Google-Gemini-API-KEY")
 
 def process_job(job_id, companies):
     total = len(companies)
