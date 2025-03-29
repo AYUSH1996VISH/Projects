@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Company Info Extractor - Listing View</title>
+  <style>
+    /* Overall page styling */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f4f4f4;
+    }
+    .container {
+      max-width: 1400px;
+      margin: auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 20px;
+    }
+    /* Form styling */
+    form {
+      margin-bottom: 20px;
+    }
+    textarea {
+      width: 100%;
+      height: 100px;
+      padding: 10px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      resize: vertical;
+      box-sizing: border-box;
+    }
+    button {
+      display: block;
+      margin: 10px auto;
+      padding: 10px 20px;
+      font-size: 16px;
+      color: #fff;
+      background-color: #007bff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    /* Progress bar styling */
+    .progress-container {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .progress-bar {
+      width: 80%;
+      height: 25px;
+      background-color: #e0e0e0;
+      border-radius: 4px;
+      margin: 10px auto;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background-color: #4caf50;
+      text-align: center;
+      line-height: 25px;
+      color: white;
+      transition: width 0.5s ease-in-out;
+    }
+    #statusText, #estimatedTime {
+      text-align: center;
+      color: #555;
+      margin-bottom: 10px;
+    }
+    /* Responsive table container */
+    .table-container {
+      width: 100%;
+      overflow-x: auto; /* Allow horizontal scroll if content is too wide */
+      margin-bottom: 20px;
+    }
+    /* Table styling */
+    table.company-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed; /* Ensures consistent column widths */
+    }
+    thead th {
+      position: sticky;
+      top: 0;
+      background-color: #007bff;
+      color: #fff;
+      padding: 10px;
+      text-align: left;
+      font-weight: bold;
+      border-bottom: 2px solid #ddd;
+    }
+    tbody td {
+      padding: 8px 10px;
+      border-bottom: 1px solid #eee;
+      vertical-align: top;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    tbody tr:nth-child(even) {
+      background-color: #fafafa;
+    }
+    /* Expandable details row */
+    tr.details-row {
+      display: none;
+      background-color: #f9f9f9;
+    }
+    tr.details-row td {
+      padding: 10px;
+      font-size: 0.9rem;
+      line-height: 1.4;
+      white-space: normal;
+    }
+    /* Tooltip styling */
+    .tooltip {
+      border-bottom: 1px dotted #000;
+      cursor: help;
+    }
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      thead th, tbody td {
+        padding: 6px;
+        font-size: 13px;
+      }
+      button {
+        font-size: 14px;
+        padding: 8px 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Company Info Extractor</h1>
+    <form id="jobForm">
+      <label for="companies">Enter company names (comma or newline separated):</label>
+      <textarea name="companies" id="companies" placeholder="Google, Microsoft, Apple"></textarea>
+      <button type="submit">Start Extraction</button>
+    </form>
+    <div class="progress-container" id="progressContainer" style="display:none;">
+      <div class="progress-bar">
+        <div class="progress-bar-fill" id="progressBarFill">0%</div>
+      </div>
+      <p id="statusText">Processing...</p>
+      <p id="estimatedTime"></p>
+    </div>
+    <div class="table-container" id="resultsContainer">
+      <!-- Listing view will be rendered here -->
+      <table class="company-table">
+        <thead>
+          <tr>
+            <th style="width: 150px;">Company</th>
+            <th style="width: 120px;">Industry</th>
+            <th style="width: 100px;">Employees</th>
+            <th style="width: 150px;">Website</th>
+            <th style="width: 200px;">Headquarters</th>
+            <th style="width: 80px;">Founded</th>
+            <th style="width: 150px;">Products</th>
+            <th style="width: 120px;">Revenue</th>
+            <th style="width: 200px;">Key Executives</th>
+            <th style="width: 200px;">Contacts</th>
+            <th style="width: 150px;">Insights</th>
+            <th style="width: 100px;">Source</th>
+            <th style="width: 150px;">Gemini Status</th>
+            <th style="width: 200px;">Wiki Summary</th>
+            <th style="width: 100px;">Error</th>
+            <th style="width: 80px;">Toggle</th>
+          </tr>
+        </thead>
+        <tbody id="dataBody">
+          <!-- Data rows will be appended here dynamically -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <script>
+    document.getElementById("jobForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      document.getElementById("dataBody").innerHTML = "";
+      document.getElementById("progressContainer").style.display = "block";
+      const companies = document.getElementById("companies").value;
+      fetch("/start", {
+        method: "POST",
+        headers: {"Content-Type": "application/x-www-form-urlencoded"},
+        body: "companies=" + encodeURIComponent(companies)
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.error) {
+          alert(data.error);
+        } else {
+          startPolling(data.job_id);
+        }
+      });
+    });
+    
+    function startPolling(jobId) {
+      const progressBarFill = document.getElementById("progressBarFill");
+      const statusText = document.getElementById("statusText");
+      const estimatedTimeText = document.getElementById("estimatedTime");
+      const interval = setInterval(function() {
+        fetch("/progress/" + jobId)
+          .then(response => response.json())
+          .then(data => {
+            if (data.error) {
+              statusText.textContent = data.error;
+              clearInterval(interval);
+            } else {
+              const total = data.total;
+              const completed = data.completed;
+              const percent = Math.round((completed / total) * 100);
+              progressBarFill.style.width = percent + "%";
+              progressBarFill.textContent = percent + "%";
+              statusText.textContent = "Processed " + completed + " out of " + total + " companies.";
+              if (data.estimated_remaining_time !== null && data.estimated_remaining_time !== undefined) {
+                estimatedTimeText.textContent = "Estimated time remaining: " + Math.round(data.estimated_remaining_time) + " seconds.";
+              }
+              // Render new results as they come in
+              renderData(data.results);
+              if (data.finished) {
+                clearInterval(interval);
+                statusText.textContent += " Finished in " + data.processing_time.toFixed(2) + " seconds.";
+              }
+            }
+          });
+      }, 1000);
+    }
+    
+    // Render the entire data set; if new rows are present, update the table body.
+    function renderData(results) {
+      let html = "";
+      results.forEach((result, index) => {
+        html += "<tr>";
+        html += "<td title='" + (result.company_name || "N/A") + "'>" + (result.company_name || "N/A") + "</td>";
+        html += "<td title='" + (result.industry_type || "N/A") + "'>" + (result.industry_type || "N/A") + "</td>";
+        html += "<td title='" + (result.employee_size || "N/A") + "'>" + (result.employee_size || "N/A") + "</td>";
+        html += "<td title='" + (result.company_website || "N/A") + "'>" + (result.company_website || "N/A") + "</td>";
+        html += "<td title='" + (result.headquarters || "N/A") + "'>" + (result.headquarters || "N/A") + "</td>";
+        html += "<td title='" + (result.founding_year || "N/A") + "'>" + (result.founding_year || "N/A") + "</td>";
+        html += "<td title='" + (result.key_products ? result.key_products.join(", ") : "N/A") + "'>" + (result.key_products ? result.key_products.join(", ") : "N/A") + "</td>";
+        html += "<td title='" + (result.annual_revenue || "N/A") + "'>" + (result.annual_revenue || "N/A") + "</td>";
+        let execs = "N/A";
+        if (result.key_executives && Array.isArray(result.key_executives)) {
+          execs = result.key_executives.map(exec => exec.name + " (" + exec.role + ")").join(", ");
+        }
+        html += "<td title='" + execs + "'>" + execs + "</td>";
+        let contacts = "N/A";
+        if (result.official_contacts) {
+          contacts = "Phone: " + (result.official_contacts.phone || "N/A") +
+                     ", Email: " + (result.official_contacts.email || "N/A") +
+                     ", Addr: " + (result.official_contacts.address || "N/A");
+        }
+        html += "<td title='" + contacts + "'>" + contacts + "</td>";
+        html += "<td title='" + (result.additional_insights || "N/A") + "'>" + (result.additional_insights || "N/A") + "</td>";
+        html += "<td title='" + (result.source || "N/A") + "'>" + (result.source || "N/A") + "</td>";
+        html += "<td title='" + (result.gemini_status || "N/A") + "'>" + (result.gemini_status || "N/A") + "</td>";
+        html += "<td title='" + (result.wikipedia_summary || "N/A") + "'>" + (result.wikipedia_summary || "N/A") + "</td>";
+        html += "<td title='" + (result.error || "") + "'>" + (result.error || "") + "</td>";
+        html += "<td><button onclick='toggleDetails(this)'>Details</button></td>";
+        html += "</tr>";
+        // Hidden expandable details row
+        html += "<tr class='details-row'><td colspan='16'>";
+        html += "<div class='details-content'>";
+        // You can add extra detail content here; for now, we show all JSON data as a formatted string
+        html += "<pre>" + JSON.stringify(result, null, 2) + "</pre>";
+        html += "</div>";
+        html += "</td></tr>";
+      });
+      document.getElementById("dataBody").innerHTML = html;
+    }
+    
+    function toggleDetails(button) {
+      // Find the next row (assumed to be the details row)
+      var currentRow = button.parentElement.parentElement;
+      var detailsRow = currentRow.nextElementSibling;
+      if (detailsRow.style.display === "table-row") {
+        detailsRow.style.display = "none";
+        button.textContent = "Details";
+      } else {
+        detailsRow.style.display = "table-row";
+        button.textContent = "Hide";
+      }
+    }
+  </script>
+</body>
+</html>
