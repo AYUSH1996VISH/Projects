@@ -20,7 +20,7 @@ This program retrieves detailed, up-to-date information about multiple companies
    - Displays the extraction progress and final results in a responsive interface.
 
 2. **Gemini API Integration**  
-   - Uses a **paid pro model** (`gemini-2.0-pro`) for advanced data retrieval.  
+   - Uses a **paid pro model** (`gemini-2.0-flash`) for advanced data retrieval.  
    - The prompt instructs the AI to provide verified data in strict JSON format.  
    - If the AI or data is unavailable, the app returns placeholders or “N/A” to avoid guesses.
 
@@ -35,7 +35,7 @@ This program retrieves detailed, up-to-date information about multiple companies
 ## Code Structure
 
 - **`CompanyInfoExtractor` class**  
-  - Initializes the Gemini API with a given key and model name (`gemini-2.0-pro`).  
+  - Initializes the Gemini API with a given key and model name (`gemini-2.0-flash`).  
   - `extract_company_info(company_name)`:  
     - Checks for hardcoded info or Wikipedia context.  
     - Sends a carefully crafted prompt to Gemini.  
