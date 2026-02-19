@@ -1,4 +1,5 @@
 """
+How to run - python pythonHTMLtoOFT.py --gui
 HTML to Outlook OFT Converter - Enterprise Edition with Preview
 Version: 3.0.0 - Full Template Preview System
 Author: Advanced Email Engineering Team
@@ -1605,4 +1606,5 @@ def main():
 
 
 if __name__ == '__main__':
+
     main()
